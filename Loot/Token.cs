@@ -12,6 +12,7 @@
 
 using Neo;
 using Neo.SmartContract.Framework;
+using Neo.SmartContract.Framework.Services;
 using System.Numerics;
 
 
@@ -28,6 +29,11 @@ namespace Loot
             Owner = owner;
             TokenID = tokenID;
             Name = "Loot #" + TokenID;
+        }
+
+        public void OwnerOnly()
+        {
+            Tools.Require(Runtime.CheckWitness(Owner), "Authorization failed.");
         }
     }
 }

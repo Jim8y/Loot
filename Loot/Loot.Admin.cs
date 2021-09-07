@@ -49,7 +49,7 @@ namespace Loot
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void OwnerOnly() { if (!Verify()) throw new Exception("No authorization."); }
+        private static void OwnerOnly() => Tools.Require(Verify(), "Authorization failed.");
 
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Loot
             // <0> -- confirmed by jinghui
             OwnerOnly();
             // <1> -- confirmed by jinghui
-            Require(newOwner.IsValid, "Loot::UInt160 is invalid.");
+            Tools.Require(newOwner.IsValid, "Loot::UInt160 is invalid.");
             OwnerMap.Put("owner", newOwner);
             return GetOwner();
         }
@@ -76,6 +76,7 @@ namespace Loot
         [Safe]
         public static UInt160 GetOwner()
         {
+            ExecutionEngine.Assert(StateStorage, "");
             var owner = OwnerMap.Get("owner");
             return owner != null ? (UInt160)owner : Owner;
         }
