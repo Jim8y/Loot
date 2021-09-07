@@ -2,6 +2,7 @@
 // This file belongs to the NEO-GAME-Loot contract developed for neo N3
 // Date: Sep-6-2021 
 //
+// The original contract is deployed on Ethereum 
 // The NEO-GAME-Loot is free smart contract distributed under the MIT software 
 // license, see the accompanying file LICENSE in the main directory of
 // the project or http://www.opensource.org/licenses/mit-license.php 
@@ -35,6 +36,21 @@ namespace Loot
         private static bool Paused() => StateStorage.IsPaused();
 
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data) => Tools.Require(!Paused());
+
+
+        [Safe]
+        public override Map<string, object> Properties(ByteString tokenId)
+        {
+            Tools.Require(Runtime.EntryScriptHash == Runtime.CallingScriptHash);
+
+            StorageMap tokenMap = new(Storage.CurrentContext, Prefix_Token);
+            Token token = (Token)StdLib.Deserialize(tokenMap[tokenId]);
+            Map<string, object> map = new();
+            map["name"] = token.Name;
+            map["owner"] = token.Owner;
+            map["tokenID"] = token.TokenID;
+            return map;
+        }
 
         [Safe]
         public string getWeapon(BigInteger tokenId)

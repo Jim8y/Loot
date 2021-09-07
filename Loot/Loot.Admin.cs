@@ -76,7 +76,6 @@ namespace Loot
         [Safe]
         public static UInt160 GetOwner()
         {
-            ExecutionEngine.Assert(StateStorage, "");
             var owner = OwnerMap.Get("owner");
             return owner != null ? (UInt160)owner : Owner;
         }
