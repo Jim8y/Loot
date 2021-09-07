@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>Loot</RootNamespace>
+    <AssemblyName>Loot</AssemblyName>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Message Text="Start NeoContract converter, Source File: $(ProjectPath)" Importance="high">
+    </Message>
+    <Exec Command="dotnet C:\Users\liaoj\git\neo-devpack-dotnet\src\Neo.Compiler.CSharp\bin\Release\net5.0\nccs.dll &quot;$(ProjectPath)&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Neo.SmartContract.Framework" Version="3.0.2" />
+  </ItemGroup>
+
+</Project>
