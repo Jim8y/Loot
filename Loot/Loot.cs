@@ -210,7 +210,7 @@ namespace Loot
         {
             // 222 reserved to the developer
             Tools.Require(!tokenId.IsZero && tokenId < 7778, "Token ID invalid");
-            Tools.Require(Runtime.EntryScriptHash != Runtime.CallingScriptHash, "Contract calls are not allowed");
+            Tools.Require(Runtime.EntryScriptHash == Runtime.CallingScriptHash, "Contract calls are not allowed");
             var sender = ((Transaction)Runtime.ScriptContainer).Sender;
             MintToken(tokenId, sender);
         }
