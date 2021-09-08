@@ -52,6 +52,7 @@ namespace Loot
             map["name"] = token.Name;
             map["owner"] = token.Owner;
             map["tokenID"] = token.TokenID;
+            map["credential"] = token.Credential;
             return map;
         }
 
@@ -65,60 +66,31 @@ namespace Loot
         }
 
         [Safe]
-        public string getWeapon(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "WEAPON", weapons);
-        }
+        public BigInteger GetCredential(BigInteger tokenId) => GetToken(tokenId).Credential;
 
         [Safe]
-        public string getChest(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "CHEST", chestArmor);
-        }
+        public string getWeapon(BigInteger credential) => pluck(credential, "WEAPON", weapons);
 
         [Safe]
-        public string getHead(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "HEAD", headArmor);
-        }
+        public string getChest(BigInteger credential) => pluck(credential, "CHEST", chestArmor);
 
         [Safe]
-        public string getWaist(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "WAIST", waistArmor);
-        }
+        public string getHead(BigInteger credential) => pluck(credential, "HEAD", headArmor);
 
         [Safe]
-        public string getFoot(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "FOOT", footArmor);
-        }
+        public string getWaist(BigInteger credential) => pluck(credential, "WAIST", waistArmor);
 
         [Safe]
-        public string getHand(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "HAND", handArmor);
-        }
+        public string getFoot(BigInteger credential) => pluck(credential, "FOOT", footArmor);
 
         [Safe]
-        public string getNeck(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "NECK", necklaces);
-        }
+        public string getHand(BigInteger credential) => pluck(credential, "HAND", handArmor);
 
         [Safe]
-        public string getRing(BigInteger tokenId)
-        {
-            var token = GetToken(tokenId);
-            return pluck(token.Credential, "RING", rings);
-        }
+        public string getNeck(BigInteger credential) => pluck(credential, "NECK", necklaces);
+
+        [Safe]
+        public string getRing(BigInteger credential) => pluck(credential, "RING", rings);
 
         [Safe]
         private string pluck(BigInteger credential, string keyPrefix, string[] sourceArray)
@@ -147,38 +119,40 @@ namespace Loot
         [Safe]
         public string tokenURI(BigInteger tokenId)
         {
+            var credential = GetToken(tokenId).Credential;
+
             var parts = new string[17];
             parts[0] = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
 
-            parts[1] = getWeapon(tokenId);
+            parts[1] = getWeapon(credential);
 
             parts[2] = "</text><text x=\"10\" y=\"40\" class=\"base\">";
 
-            parts[3] = getChest(tokenId);
+            parts[3] = getChest(credential);
 
             parts[4] = "</text><text x=\"10\" y=\"60\" class=\"base\">";
 
-            parts[5] = getHead(tokenId);
+            parts[5] = getHead(credential);
 
             parts[6] = "</text><text x=\"10\" y=\"80\" class=\"base\">";
 
-            parts[7] = getWaist(tokenId);
+            parts[7] = getWaist(credential);
 
             parts[8] = "</text><text x=\"10\" y=\"100\" class=\"base\">";
 
-            parts[9] = getFoot(tokenId);
+            parts[9] = getFoot(credential);
 
             parts[10] = "</text><text x=\"10\" y=\"120\" class=\"base\">";
 
-            parts[11] = getHand(tokenId);
+            parts[11] = getHand(credential);
 
             parts[12] = "</text><text x=\"10\" y=\"140\" class=\"base\">";
 
-            parts[13] = getNeck(tokenId);
+            parts[13] = getNeck(credential);
 
             parts[14] = "</text><text x=\"10\" y=\"160\" class=\"base\">";
 
-            parts[15] = getRing(tokenId);
+            parts[15] = getRing(credential);
 
             parts[16] = "</text></svg>";
 
