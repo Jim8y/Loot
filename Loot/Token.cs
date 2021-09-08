@@ -22,12 +22,15 @@ namespace Loot
     {
         public BigInteger TokenID;
 
-        public static Token MintLoot(UInt160 owner, BigInteger TokenID) => new(owner, TokenID);
+        public BigInteger Credential;
 
-        private Token(UInt160 owner, BigInteger tokenID)
+        public static Token MintLoot(UInt160 owner, BigInteger TokenID, BigInteger Credential) => new(owner, TokenID, Credential);
+
+        private Token(UInt160 owner, BigInteger tokenID, BigInteger credential)
         {
             Owner = owner;
             TokenID = tokenID;
+            Credential = credential;
             Name = "Loot #" + TokenID;
         }
 

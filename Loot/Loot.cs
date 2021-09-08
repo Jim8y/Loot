@@ -24,7 +24,7 @@ namespace Loot
 {
     [ManifestExtra("Author", "Jinghui Liao")]
     [ManifestExtra("Email", "jinghui@wayne.edu")]
-    [DisplayName("NEO-GAME-Loot")]
+    [DisplayName("Secure-Loot")]
     [ManifestExtra("Description", "This is a text NFT game developed for neo N3.")]
     [SupportedStandards("NEP-11")]
     [ContractPermission("*", "onNEP11Payment")]
@@ -35,8 +35,11 @@ namespace Loot
 
         private static bool Paused() => StateStorage.IsPaused();
 
+        public override string Symbol() => "SecureLoot";
+
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data) => Tools.Require(!Paused());
 
+        private static readonly StorageMap TokenIndexMap = new(Storage.CurrentContext, (byte)StoragePrefix.Token);
 
         [Safe]
         public override Map<string, object> Properties(ByteString tokenId)
@@ -52,60 +55,78 @@ namespace Loot
             return map;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Token GetToken(BigInteger tokenId)
+        {
+            StorageMap tokenMap = new(Storage.CurrentContext, Prefix_Token);
+            Token token = (Token)StdLib.Deserialize(tokenMap[tokenId.ToString()]);
+            Tools.Require(token is not null, "Token not exists");
+            return token;
+        }
+
         [Safe]
         public string getWeapon(BigInteger tokenId)
         {
-            return pluck(tokenId, "WEAPON", weapons);
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, weapons);
         }
 
         [Safe]
         public string getChest(BigInteger tokenId)
         {
-            return pluck(tokenId, "CHEST", chestArmor);
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, chestArmor);
         }
 
         [Safe]
         public string getHead(BigInteger tokenId)
         {
-            return pluck(tokenId, "HEAD", headArmor);
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, headArmor);
         }
 
         [Safe]
         public string getWaist(BigInteger tokenId)
         {
-            return pluck(tokenId, "WAIST", waistArmor);
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, waistArmor);
         }
 
         [Safe]
         public string getFoot(BigInteger tokenId)
         {
-            return pluck(tokenId, "FOOT", footArmor);
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, footArmor);
         }
 
         [Safe]
         public string getHand(BigInteger tokenId)
         {
-            return pluck(tokenId, "HAND", handArmor);
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, handArmor);
         }
 
         [Safe]
         public string getNeck(BigInteger tokenId)
         {
-            return pluck(tokenId, "NECK", necklaces);
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, necklaces);
         }
 
         [Safe]
         public string getRing(BigInteger tokenId)
         {
-            return pluck(tokenId, "RING", rings);
+
+            var token = GetToken(tokenId);
+            return pluck(token.Credential, rings);
         }
 
-        private string pluck(BigInteger tokenId, string keyPrefix, string[] sourceArray)
+        [Safe]
+        private string pluck(BigInteger credential, string[] sourceArray)
         {
-            var rand = (BigInteger)CryptoLib.Sha256(keyPrefix + tokenId.ToString());
-
+            //var rand = (BigInteger)CryptoLib.Sha256(keyPrefix + tokenId.ToString());
+            var rand = credential;
             string output = sourceArray[(int)rand % sourceArray.Length];
-
             var greatness = rand % 21;
             if (greatness > 14)
             {
@@ -117,13 +138,9 @@ namespace Loot
                 name[0] = namePrefixes[(int)rand % namePrefixes.Length];
                 name[1] = nameSuffixes[(int)rand % nameSuffixes.Length];
                 if (greatness == 19)
-                {
                     output = $"\"{name[0]} {name[1]}\" {output}";
-                }
                 else
-                {
                     output = $"\"{name[0]} {name[1]}\" {output} +1";
-                }
             }
             return output;
         }
@@ -176,29 +193,80 @@ namespace Loot
             return output;
         }
 
+        /// <summary>
+        /// Security Requirements:
+        /// 
+        /// <0> Has to check the validity of the token Id 
+        ///     both the upper and lower bound
+        /// 
+        /// <1> shall not be called from a contract
+        /// 
+        /// <3> tx shall fault if token already taken
+        /// 
+        /// <4> update the token map.
+        /// </summary>
+        /// <param name="tokenId"></param>
         public void claim(BigInteger tokenId)
         {
             // 222 reserved to the developer
             Tools.Require(!tokenId.IsZero && tokenId < 7778, "Token ID invalid");
-
             Tools.Require(Runtime.EntryScriptHash != Runtime.CallingScriptHash, "Contract calls are not allowed");
-
-            Token token = Token.MintLoot(((Transaction)Runtime.ScriptContainer).Sender, tokenId);
-            Mint((ByteString)tokenId, token);
+            var sender = ((Transaction)Runtime.ScriptContainer).Sender;
+            MintToken(tokenId, sender);
         }
 
+        /// <summary>
+        /// Security Requirements:
+        /// 
+        /// <0> only the owner can call this function
+        /// 
+        /// <1> the range of the tokenid is to be in (7777, 8001)
+        /// </summary>
+        /// <param name="tokenId"></param>
         public void ownerClaim(BigInteger tokenId)
         {
             OwnerOnly();
             Tools.Require(tokenId > 7777 && tokenId < 8001, "Token ID invalid");
-
-            Token token = Token.MintLoot(GetOwner(), tokenId);
-            Mint((ByteString)tokenId, token);
+            var sender = GetOwner();
+            MintToken(tokenId, sender);
         }
 
-        public override string Symbol()
+        /// <summary>
+        /// Security Requirements:
+        /// 
+        /// <0> the transaction should `FAULT` if the token already taken
+        /// 
+        /// <1> has to update the taken map if a new token is mint.
+        /// 
+        /// </summary>
+        /// <param name="tokenId"></param>
+        /// <param name="sender"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void MintToken(BigInteger tokenId, UInt160 sender)
         {
-            return "LootForNeo";
+            var credential = CheckClaim(tokenId);
+            Token token = Token.MintLoot(sender, tokenId, credential);
+            Mint(tokenId.ToString(), token);
+            TokenIndexMap.Put(tokenId.ToString(), tokenId);
+        }
+
+        /// <summary>
+        /// Security requirements:
+        /// 
+        /// <0> throw exception if token already taken
+        /// 
+        /// <1> should get a random number as credential that
+        ///     is not predictable and not linked to the tokenId
+        /// </summary>
+        /// <param name="tokenId"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private BigInteger CheckClaim(BigInteger tokenId)
+        {
+            // <0> -- confirmed
+            Tools.Require(TokenIndexMap.Get(tokenId.ToString()) is not null, "Token already claimed.");
+            // <1> -- confirmed
+            return Runtime.GetRandom();
         }
     }
 
@@ -206,5 +274,6 @@ namespace Loot
     {
         State = 0x14,
         Owner = 0x15,
+        Token = 0x16,
     }
 }
