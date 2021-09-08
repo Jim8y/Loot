@@ -68,64 +68,62 @@ namespace Loot
         public string getWeapon(BigInteger tokenId)
         {
             var token = GetToken(tokenId);
-            return pluck(token.Credential, weapons);
+            return pluck(token.Credential, "WEAPON", weapons);
         }
 
         [Safe]
         public string getChest(BigInteger tokenId)
         {
             var token = GetToken(tokenId);
-            return pluck(token.Credential, chestArmor);
+            return pluck(token.Credential, "CHEST", chestArmor);
         }
 
         [Safe]
         public string getHead(BigInteger tokenId)
         {
             var token = GetToken(tokenId);
-            return pluck(token.Credential, headArmor);
+            return pluck(token.Credential, "HEAD", headArmor);
         }
 
         [Safe]
         public string getWaist(BigInteger tokenId)
         {
             var token = GetToken(tokenId);
-            return pluck(token.Credential, waistArmor);
+            return pluck(token.Credential, "WAIST", waistArmor);
         }
 
         [Safe]
         public string getFoot(BigInteger tokenId)
         {
             var token = GetToken(tokenId);
-            return pluck(token.Credential, footArmor);
+            return pluck(token.Credential, "FOOT", footArmor);
         }
 
         [Safe]
         public string getHand(BigInteger tokenId)
         {
             var token = GetToken(tokenId);
-            return pluck(token.Credential, handArmor);
+            return pluck(token.Credential, "HAND", handArmor);
         }
 
         [Safe]
         public string getNeck(BigInteger tokenId)
         {
             var token = GetToken(tokenId);
-            return pluck(token.Credential, necklaces);
+            return pluck(token.Credential, "NECK", necklaces);
         }
 
         [Safe]
         public string getRing(BigInteger tokenId)
         {
-
             var token = GetToken(tokenId);
-            return pluck(token.Credential, rings);
+            return pluck(token.Credential, "RING", rings);
         }
 
         [Safe]
-        private string pluck(BigInteger credential, string[] sourceArray)
+        private string pluck(BigInteger credential, string keyPrefix, string[] sourceArray)
         {
-            //var rand = (BigInteger)CryptoLib.Sha256(keyPrefix + tokenId.ToString());
-            var rand = credential;
+            var rand = (BigInteger)CryptoLib.Sha256(keyPrefix + credential.ToString());
             string output = sourceArray[(int)rand % sourceArray.Length];
             var greatness = rand % 21;
             if (greatness > 14)
