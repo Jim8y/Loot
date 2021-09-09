@@ -36,7 +36,8 @@ namespace Loot
         public override string Symbol() => "sLoot";
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data) => Tools.Require(!Paused());
         private static readonly StorageMap TokenIndexMap = new(Storage.CurrentContext, (byte)StoragePrefix.Token);
-        public static event Action<bool> test_1;
+        private static readonly StorageMap TokenMap = new(Storage.CurrentContext, Prefix_Token);
+        public static event Action<string> event_msg;
 
         [Safe]
         public override Map<string, object> Properties(ByteString tokenId)
@@ -55,14 +56,13 @@ namespace Loot
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Token GetToken(BigInteger tokenId)
         {
-            StorageMap tokenMap = new(Storage.CurrentContext, Prefix_Token);
-            Token token = (Token)StdLib.Deserialize(tokenMap[tokenId.ToString()]);
+            Token token = (Token)StdLib.Deserialize(TokenMap[tokenId.ToString()]);
             Tools.Require(token is not null, "Token not exists");
             return token;
         }
 
         [Safe]
-        public BigInteger GetCredential(BigInteger tokenId) => GetToken(tokenId).Credential;
+        public BigInteger getCredential(BigInteger tokenId) => GetToken(tokenId).Credential;
 
         [Safe]
         public string getWeapon(BigInteger credential) => pluck(credential, "WEAPON", weapons);
@@ -114,28 +114,28 @@ namespace Loot
         {
             var credential = GetToken(tokenId).Credential;
 
-            var parts_0 = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
-            var parts_1 = getWeapon(credential);
-            var parts_2 = "</text><text x=\"10\" y=\"40\" class=\"base\">";
-            var parts_3 = getChest(credential);
-            var parts_4 = "</text><text x=\"10\" y=\"60\" class=\"base\">";
-            var parts_5 = getHead(credential);
-            var parts_6 = "</text><text x=\"10\" y=\"80\" class=\"base\">";
-            var parts_7 = getWaist(credential);
-            var parts_8 = "</text><text x=\"10\" y=\"100\" class=\"base\">";
-            var parts_9 = getFoot(credential);
-            var parts_10 = "</text><text x=\"10\" y=\"120\" class=\"base\">";
-            var parts_11 = getHand(credential);
-            var parts_12 = "</text><text x=\"10\" y=\"140\" class=\"base\">";
-            var parts_13 = getNeck(credential);
-            var parts_14 = "</text><text x=\"10\" y=\"160\" class=\"base\">";
-            var parts_15 = getRing(credential);
-            var parts_16 = "</text></svg>";
+            //var parts_0 = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
+            //var parts_1 = getWeapon(credential);
+            //var parts_2 = "</text><text x=\"10\" y=\"40\" class=\"base\">";
+            //var parts_3 = getChest(credential);
+            //var parts_4 = "</text><text x=\"10\" y=\"60\" class=\"base\">";
+            //var parts_5 = getHead(credential);
+            //var parts_6 = "</text><text x=\"10\" y=\"80\" class=\"base\">";
+            //var parts_7 = getWaist(credential);
+            //var parts_8 = "</text><text x=\"10\" y=\"100\" class=\"base\">";
+            //var parts_9 = getFoot(credential);
+            //var parts_10 = "</text><text x=\"10\" y=\"120\" class=\"base\">";
+            //var parts_11 = getHand(credential);
+            //var parts_12 = "</text><text x=\"10\" y=\"140\" class=\"base\">";
+            //var parts_13 = getNeck(credential);
+            //var parts_14 = "</text><text x=\"10\" y=\"160\" class=\"base\">";
+            //var parts_15 = getRing(credential);
+            //var parts_16 = "</text></svg>";
 
-            string output = $"{ parts_0} { parts_1} { parts_2} { parts_3} { parts_4} { parts_5} { parts_6} { parts_7} { parts_8}";
-            output = $"{output} { parts_9} { parts_10} { parts_11} { parts_12} { parts_13} { parts_14} { parts_15} { parts_16}";
-            string json = StdLib.Base64Encode($"{{\"name\": \"Bag # {tokenId.ToString()}\", \"description\": \"Loot is randomized adventurer gear generated and stored on chain.Stats, images, and other functionality are intentionally omitted for others to interpret.Feel free to use Loot in any way you want.\", \"image\": \"data:image / svg + xml; base64, { StdLib.Base64Encode(output)} \"}}");
-            output = $"data:application/json;base64, {json}";
+            string output = "";//$"{ parts_0} { parts_1} { parts_2} { parts_3} { parts_4} { parts_5} { parts_6} { parts_7} { parts_8}";
+            //output = $"{output} { parts_9} { parts_10} { parts_11} { parts_12} { parts_13} { parts_14} { parts_15} { parts_16}";
+            //string json = StdLib.Base64Encode($"{{\"name\": \"Bag # {tokenId.ToString()}\", \"description\": \"Loot is randomized adventurer gear generated and stored on chain.Stats, images, and other functionality are intentionally omitted for others to interpret.Feel free to use Loot in any way you want.\", \"image\": \"data:image / svg + xml; base64, { StdLib.Base64Encode(output)} \"}}");
+            //output = $"data:application/json;base64, {json}";
 
             return output;
         }
@@ -160,6 +160,7 @@ namespace Loot
             Tools.Require(Runtime.EntryScriptHash == Runtime.CallingScriptHash, "Contract calls are not allowed");
             Transaction tx = (Transaction)Runtime.ScriptContainer;
             MintToken(tokenId, tx.Sender);
+            event_msg("Player mints success");
         }
 
         /// <summary>
@@ -176,6 +177,7 @@ namespace Loot
             Tools.Require(tokenId > 7777 && tokenId < 8001, "Token ID invalid");
             var sender = GetOwner();
             MintToken(tokenId, sender);
+            event_msg("Owner mints success");
         }
 
         /// <summary>
@@ -194,7 +196,7 @@ namespace Loot
             var credential = CheckClaim(tokenId);
             Token token = Token.MintLoot(sender, tokenId, credential);
             Mint(tokenId.ToString(), token);
-            TokenIndexMap.Put(tokenId.ToString(), tokenId);
+            TokenIndexMap.Put(tokenId.ToString(), "taken");
         }
 
         /// <summary>
@@ -211,7 +213,7 @@ namespace Loot
         private BigInteger CheckClaim(BigInteger tokenId)
         {
             // <0> -- confirmed
-            Tools.Require(TokenIndexMap.Get(tokenId.ToString()) is null, "Token already claimed.");
+            Tools.Require(TokenIndexMap.Get(tokenId.ToString()) != "taken", "Token already claimed.");
             // <1> -- confirmed
             return Runtime.GetRandom();
         }
