@@ -18,15 +18,15 @@ using System.Numerics;
 
 namespace Loot
 {
-    public class Token : Nep11TokenState
+    public class TokenState : Nep11TokenState
     {
         public BigInteger TokenID;
 
         public BigInteger Credential;
 
-        public static Token MintLoot(UInt160 owner, BigInteger TokenID, BigInteger Credential) => new(owner, TokenID, Credential);
+        public static TokenState MintLoot(UInt160 owner, BigInteger TokenID, BigInteger Credential) => new(owner, TokenID, Credential);
 
-        private Token(UInt160 owner, BigInteger tokenID, BigInteger credential)
+        private TokenState(UInt160 owner, BigInteger tokenID, BigInteger credential)
         {
             Owner = owner;
             TokenID = tokenID;

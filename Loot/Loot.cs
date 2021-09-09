@@ -1,7 +1,10 @@
 // Copyright (C) 2021 Jinghui Liao.
 // This file belongs to the NEO-GAME-Loot contract developed for neo N3
 // Date: Sep-6-2021 
-//
+// TestNet: 0xb78af146bd7aa6870bc5e005bb1134d5d1bfd2dc
+// 
+// This is not an official Loot contract but a migration from solidity to
+// C# to demonstrate how to develop Loot-like NFT on N3. 
 // The original contract is deployed on Ethereum 
 // The NEO-GAME-Loot is free smart contract distributed under the MIT software 
 // license, see the accompanying file LICENSE in the main directory of
@@ -28,13 +31,10 @@ namespace Loot
     [ManifestExtra("Description", "This is a text NFT game developed for neo N3.")]
     [SupportedStandards("NEP-11")]
     [ContractPermission("*", "onNEP11Payment")]
-    [ContractTrust("0xd2a4cff31913016155e38e474a2c06d08be276cf")] // GAS contract
-    public partial class Loot : Nep11Token<Token>
+    public partial class Loot : Nep11Token<TokenState>
     {
         public string SourceCode => "https://github.com/Liaojinghui/Loot";
-        private static bool Paused() => StateStorage.IsPaused();
         public override string Symbol() => "sLoot";
-        public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data) => Tools.Require(!Paused());
         private static readonly StorageMap TokenIndexMap = new(Storage.CurrentContext, (byte)StoragePrefix.Token);
         private static readonly StorageMap TokenMap = new(Storage.CurrentContext, Prefix_Token);
         public static event Action<string> event_msg;
@@ -44,7 +44,7 @@ namespace Loot
         {
             Tools.Require(Runtime.EntryScriptHash == Runtime.CallingScriptHash);
             StorageMap tokenMap = new(Storage.CurrentContext, Prefix_Token);
-            Token token = (Token)StdLib.Deserialize(tokenMap[tokenId]);
+            TokenState token = (TokenState)StdLib.Deserialize(tokenMap[tokenId]);
             Map<string, object> map = new();
             map["name"] = token.Name;
             map["owner"] = token.Owner;
@@ -54,9 +54,9 @@ namespace Loot
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Token GetToken(BigInteger tokenId)
+        private TokenState GetToken(BigInteger tokenId)
         {
-            Token token = (Token)StdLib.Deserialize(TokenMap[tokenId.ToString()]);
+            TokenState token = (TokenState)StdLib.Deserialize(TokenMap[tokenId.ToString()]);
             Tools.Require(token is not null, "Token not exists");
             return token;
         }
@@ -65,41 +65,45 @@ namespace Loot
         public BigInteger getCredential(BigInteger tokenId) => GetToken(tokenId).Credential;
 
         [Safe]
-        public string getWeapon(BigInteger credential) => pluck(credential, "WEAPON", weapons);
+        public string getWeapon(BigInteger credential) => pluck(credential, 0xd7a595, weapons);
 
         [Safe]
-        public string getChest(BigInteger credential) => pluck(credential, "CHEST", chestArmor);
+        public string getChest(BigInteger credential) => pluck(credential, 0x5a7e36, chestArmor);
 
         [Safe]
-        public string getHead(BigInteger credential) => pluck(credential, "HEAD", headArmor);
+        public string getHead(BigInteger credential) => pluck(credential, 0x0cdfbb, headArmor);
 
         [Safe]
-        public string getWaist(BigInteger credential) => pluck(credential, "WAIST", waistArmor);
+        public string getWaist(BigInteger credential) => pluck(credential, 0x7dcd1b, waistArmor);
 
         [Safe]
-        public string getFoot(BigInteger credential) => pluck(credential, "FOOT", footArmor);
+        public string getFoot(BigInteger credential) => pluck(credential, 0x92877a, footArmor);
 
         [Safe]
-        public string getHand(BigInteger credential) => pluck(credential, "HAND", handArmor);
+        public string getHand(BigInteger credential) => pluck(credential, 0x323282, handArmor);
 
         [Safe]
-        public string getNeck(BigInteger credential) => pluck(credential, "NECK", necklaces);
+        public string getNeck(BigInteger credential) => pluck(credential, 0x0d59c2, necklaces);
 
         [Safe]
-        public string getRing(BigInteger credential) => pluck(credential, "RING", rings);
+        public string getRing(BigInteger credential) => pluck(credential, 0xfae431, rings);
 
         [Safe]
-        private string pluck(BigInteger credential, string keyPrefix, string[] sourceArray)
+        private string pluck(BigInteger credential, BigInteger keyPrefix, string[] sourceArray)
         {
-            var rand = (BigInteger)CryptoLib.Sha256(keyPrefix + credential.ToString());
-            string output = sourceArray[(int)rand % sourceArray.Length];
+            var rand = credential ^ keyPrefix;
+            var value = rand % sourceArray.Length;
+            string output = sourceArray[(int)value];
             var greatness = rand % 21;
 
-            if (greatness > 14) output = $"{output} {suffixes[(int)rand % suffixes.Length]}";
+            value = rand % suffixes.Length;
+            if (greatness > 14) output = $"{output} {suffixes[(int)value]}";
             if (greatness >= 19)
             {
-                var name_0 = namePrefixes[(int)rand % namePrefixes.Length];
-                var name_1 = nameSuffixes[(int)rand % nameSuffixes.Length];
+                value = rand % namePrefixes.Length;
+                var name_0 = namePrefixes[(int)value];
+                value = rand % nameSuffixes.Length;
+                var name_1 = nameSuffixes[(int)value];
                 if (greatness == 19)
                     output = $"\"{name_0} {name_1}\" { output}";
                 else
@@ -114,26 +118,28 @@ namespace Loot
         {
             var credential = GetToken(tokenId).Credential;
 
-            //var parts_0 = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
-            //var parts_1 = getWeapon(credential);
-            //var parts_2 = "</text><text x=\"10\" y=\"40\" class=\"base\">";
-            //var parts_3 = getChest(credential);
-            //var parts_4 = "</text><text x=\"10\" y=\"60\" class=\"base\">";
-            //var parts_5 = getHead(credential);
-            //var parts_6 = "</text><text x=\"10\" y=\"80\" class=\"base\">";
-            //var parts_7 = getWaist(credential);
-            //var parts_8 = "</text><text x=\"10\" y=\"100\" class=\"base\">";
-            //var parts_9 = getFoot(credential);
-            //var parts_10 = "</text><text x=\"10\" y=\"120\" class=\"base\">";
-            //var parts_11 = getHand(credential);
-            //var parts_12 = "</text><text x=\"10\" y=\"140\" class=\"base\">";
-            //var parts_13 = getNeck(credential);
-            //var parts_14 = "</text><text x=\"10\" y=\"160\" class=\"base\">";
-            //var parts_15 = getRing(credential);
-            //var parts_16 = "</text></svg>";
+            var parts_0 = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
+            var parts_1 = $"Safe Loot on Neo N3 Bag # {tokenId.ToString()}";
+            var parts_2 = "</text><text x=\"10\" y=\"40\" class=\"base\">";
+            var parts_3 = getWeapon(credential);
+            var parts_4 = "</text><text x=\"10\" y=\"60\" class=\"base\">";
+            var parts_5 = getChest(credential);
+            var parts_6 = "</text><text x=\"10\" y=\"80\" class=\"base\">";
+            var parts_7 = getHead(credential);
+            var parts_8 = "</text><text x=\"10\" y=\"100\" class=\"base\">";
+            var parts_9 = getWaist(credential);
+            var parts_10 = "</text><text x=\"10\" y=\"120\" class=\"base\">";
+            var parts_11 = getFoot(credential);
+            var parts_12 = "</text><text x=\"10\" y=\"140\" class=\"base\">";
+            var parts_13 = getHand(credential);
+            var parts_14 = "</text><text x=\"10\" y=\"160\" class=\"base\">";
+            var parts_15 = getNeck(credential);
+            var parts_16 = "</text><text x=\"10\" y=\"180\" class=\"base\">";
+            var parts_17 = getRing(credential);
+            var parts_18 = "</text></svg>";
 
-            string output = "";//$"{ parts_0} { parts_1} { parts_2} { parts_3} { parts_4} { parts_5} { parts_6} { parts_7} { parts_8}";
-            //output = $"{output} { parts_9} { parts_10} { parts_11} { parts_12} { parts_13} { parts_14} { parts_15} { parts_16}";
+            string output = $"{ parts_0} { parts_1} { parts_2} { parts_3} { parts_4} { parts_5} { parts_6} { parts_7} { parts_8}";
+            output = $"{output} { parts_9} { parts_10} { parts_11} { parts_12} { parts_13} { parts_14} { parts_15} { parts_16} {parts_17}{parts_18}";
             //string json = StdLib.Base64Encode($"{{\"name\": \"Bag # {tokenId.ToString()}\", \"description\": \"Loot is randomized adventurer gear generated and stored on chain.Stats, images, and other functionality are intentionally omitted for others to interpret.Feel free to use Loot in any way you want.\", \"image\": \"data:image / svg + xml; base64, { StdLib.Base64Encode(output)} \"}}");
             //output = $"data:application/json;base64, {json}";
 
@@ -194,7 +200,7 @@ namespace Loot
         private void MintToken(BigInteger tokenId, UInt160 sender)
         {
             var credential = CheckClaim(tokenId);
-            Token token = Token.MintLoot(sender, tokenId, credential);
+            TokenState token = TokenState.MintLoot(sender, tokenId, credential);
             Mint(tokenId.ToString(), token);
             TokenIndexMap.Put(tokenId.ToString(), "taken");
         }
