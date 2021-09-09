@@ -32,20 +32,16 @@ namespace Loot
     public partial class Loot : Nep11Token<Token>
     {
         public string SourceCode => "https://github.com/Liaojinghui/Loot";
-
         private static bool Paused() => StateStorage.IsPaused();
-
-        public override string Symbol() => "SecureLoot";
-
+        public override string Symbol() => "sLoot";
         public static void OnNEP17Payment(UInt160 from, BigInteger amount, object data) => Tools.Require(!Paused());
-
         private static readonly StorageMap TokenIndexMap = new(Storage.CurrentContext, (byte)StoragePrefix.Token);
+        public static event Action<bool> test_1;
 
         [Safe]
         public override Map<string, object> Properties(ByteString tokenId)
         {
             Tools.Require(Runtime.EntryScriptHash == Runtime.CallingScriptHash);
-
             StorageMap tokenMap = new(Storage.CurrentContext, Prefix_Token);
             Token token = (Token)StdLib.Deserialize(tokenMap[tokenId]);
             Map<string, object> map = new();
@@ -98,19 +94,16 @@ namespace Loot
             var rand = (BigInteger)CryptoLib.Sha256(keyPrefix + credential.ToString());
             string output = sourceArray[(int)rand % sourceArray.Length];
             var greatness = rand % 21;
-            if (greatness > 14)
-            {
-                output = $"{output} {suffixes[(int)rand % suffixes.Length]}";
-            }
+
+            if (greatness > 14) output = $"{output} {suffixes[(int)rand % suffixes.Length]}";
             if (greatness >= 19)
             {
-                var name = new string[2];
-                name[0] = namePrefixes[(int)rand % namePrefixes.Length];
-                name[1] = nameSuffixes[(int)rand % nameSuffixes.Length];
+                var name_0 = namePrefixes[(int)rand % namePrefixes.Length];
+                var name_1 = nameSuffixes[(int)rand % nameSuffixes.Length];
                 if (greatness == 19)
-                    output = $"\"{name[0]} {name[1]}\" {output}";
+                    output = $"\"{name_0} {name_1}\" { output}";
                 else
-                    output = $"\"{name[0]} {name[1]}\" {output} +1";
+                    output = $"\"{name_0} {name_1}\" { output} +1";
             }
             return output;
         }
@@ -121,44 +114,26 @@ namespace Loot
         {
             var credential = GetToken(tokenId).Credential;
 
-            var parts = new string[17];
-            parts[0] = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
+            var parts_0 = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
+            var parts_1 = getWeapon(credential);
+            var parts_2 = "</text><text x=\"10\" y=\"40\" class=\"base\">";
+            var parts_3 = getChest(credential);
+            var parts_4 = "</text><text x=\"10\" y=\"60\" class=\"base\">";
+            var parts_5 = getHead(credential);
+            var parts_6 = "</text><text x=\"10\" y=\"80\" class=\"base\">";
+            var parts_7 = getWaist(credential);
+            var parts_8 = "</text><text x=\"10\" y=\"100\" class=\"base\">";
+            var parts_9 = getFoot(credential);
+            var parts_10 = "</text><text x=\"10\" y=\"120\" class=\"base\">";
+            var parts_11 = getHand(credential);
+            var parts_12 = "</text><text x=\"10\" y=\"140\" class=\"base\">";
+            var parts_13 = getNeck(credential);
+            var parts_14 = "</text><text x=\"10\" y=\"160\" class=\"base\">";
+            var parts_15 = getRing(credential);
+            var parts_16 = "</text></svg>";
 
-            parts[1] = getWeapon(credential);
-
-            parts[2] = "</text><text x=\"10\" y=\"40\" class=\"base\">";
-
-            parts[3] = getChest(credential);
-
-            parts[4] = "</text><text x=\"10\" y=\"60\" class=\"base\">";
-
-            parts[5] = getHead(credential);
-
-            parts[6] = "</text><text x=\"10\" y=\"80\" class=\"base\">";
-
-            parts[7] = getWaist(credential);
-
-            parts[8] = "</text><text x=\"10\" y=\"100\" class=\"base\">";
-
-            parts[9] = getFoot(credential);
-
-            parts[10] = "</text><text x=\"10\" y=\"120\" class=\"base\">";
-
-            parts[11] = getHand(credential);
-
-            parts[12] = "</text><text x=\"10\" y=\"140\" class=\"base\">";
-
-            parts[13] = getNeck(credential);
-
-            parts[14] = "</text><text x=\"10\" y=\"160\" class=\"base\">";
-
-            parts[15] = getRing(credential);
-
-            parts[16] = "</text></svg>";
-
-            string output = $"{parts[0]} {parts[1]} {parts[2]} {parts[3]} {parts[4]} {parts[5]} {parts[6]} {parts[7]} {parts[8]}";
-            output = $"{output} {parts[9]} {parts[10]} {parts[11]} {parts[12]} {parts[13]} {parts[14]} {parts[15]} {parts[16]}";
-
+            string output = $"{ parts_0} { parts_1} { parts_2} { parts_3} { parts_4} { parts_5} { parts_6} { parts_7} { parts_8}";
+            output = $"{output} { parts_9} { parts_10} { parts_11} { parts_12} { parts_13} { parts_14} { parts_15} { parts_16}";
             string json = StdLib.Base64Encode($"{{\"name\": \"Bag # {tokenId.ToString()}\", \"description\": \"Loot is randomized adventurer gear generated and stored on chain.Stats, images, and other functionality are intentionally omitted for others to interpret.Feel free to use Loot in any way you want.\", \"image\": \"data:image / svg + xml; base64, { StdLib.Base64Encode(output)} \"}}");
             output = $"data:application/json;base64, {json}";
 
@@ -183,8 +158,8 @@ namespace Loot
             // 222 reserved to the developer
             Tools.Require(!tokenId.IsZero && tokenId < 7778, "Token ID invalid");
             Tools.Require(Runtime.EntryScriptHash == Runtime.CallingScriptHash, "Contract calls are not allowed");
-            var sender = ((Transaction)Runtime.ScriptContainer).Sender;
-            MintToken(tokenId, sender);
+            Transaction tx = (Transaction)Runtime.ScriptContainer;
+            MintToken(tokenId, tx.Sender);
         }
 
         /// <summary>
@@ -236,7 +211,7 @@ namespace Loot
         private BigInteger CheckClaim(BigInteger tokenId)
         {
             // <0> -- confirmed
-            Tools.Require(TokenIndexMap.Get(tokenId.ToString()) is not null, "Token already claimed.");
+            Tools.Require(TokenIndexMap.Get(tokenId.ToString()) is null, "Token already claimed.");
             // <1> -- confirmed
             return Runtime.GetRandom();
         }
