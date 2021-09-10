@@ -31,7 +31,7 @@ namespace Loot
             Owner = owner;
             TokenID = tokenID;
             Credential = credential;
-            Name = "Loot #" + TokenID;
+            Name = "N3 Secure Loot #" + TokenID;
         }
 
         public void OwnerOnly()

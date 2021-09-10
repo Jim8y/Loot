@@ -116,33 +116,34 @@ namespace Loot
         [Safe]
         public string tokenURI(BigInteger tokenId)
         {
-            var credential = GetToken(tokenId).Credential;
-
-            var parts_0 = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width=\"100%\" height=\"100%\" fill=\"black\" /><text x=\"10\" y=\"20\" class=\"base\">";
-            var parts_1 = $"Safe Loot on Neo N3 Bag # {tokenId.ToString()}";
+            var token = GetToken(tokenId);
+            var parts_0 = "<svg xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMinYMin meet\" viewBox=\"0 0 350 350\">" +
+                "<style>.base { fill: white; font-family: serif; font-size: 14px; }</style>" +
+                "<rect width=\"100%\" height=\"100%\" fill=\"black\" />" +
+                "<text x=\"10\" y=\"20\" class=\"base\">";
+            var parts_1 = $"{token.Name}";
             var parts_2 = "</text><text x=\"10\" y=\"40\" class=\"base\">";
-            var parts_3 = getWeapon(credential);
+            var parts_3 = getWeapon(token.Credential);
             var parts_4 = "</text><text x=\"10\" y=\"60\" class=\"base\">";
-            var parts_5 = getChest(credential);
+            var parts_5 = getChest(token.Credential);
             var parts_6 = "</text><text x=\"10\" y=\"80\" class=\"base\">";
-            var parts_7 = getHead(credential);
+            var parts_7 = getHead(token.Credential);
             var parts_8 = "</text><text x=\"10\" y=\"100\" class=\"base\">";
-            var parts_9 = getWaist(credential);
+            var parts_9 = getWaist(token.Credential);
             var parts_10 = "</text><text x=\"10\" y=\"120\" class=\"base\">";
-            var parts_11 = getFoot(credential);
+            var parts_11 = getFoot(token.Credential);
             var parts_12 = "</text><text x=\"10\" y=\"140\" class=\"base\">";
-            var parts_13 = getHand(credential);
+            var parts_13 = getHand(token.Credential);
             var parts_14 = "</text><text x=\"10\" y=\"160\" class=\"base\">";
-            var parts_15 = getNeck(credential);
+            var parts_15 = getNeck(token.Credential);
             var parts_16 = "</text><text x=\"10\" y=\"180\" class=\"base\">";
-            var parts_17 = getRing(credential);
+            var parts_17 = getRing(token.Credential);
             var parts_18 = "</text></svg>";
 
-            string output = $"{ parts_0} { parts_1} { parts_2} { parts_3} { parts_4} { parts_5} { parts_6} { parts_7} { parts_8}";
-            output = $"{output} { parts_9} { parts_10} { parts_11} { parts_12} { parts_13} { parts_14} { parts_15} { parts_16} {parts_17}{parts_18}";
+            string output = $"{parts_0} {parts_1} {parts_2} {parts_3} {parts_4} {parts_5} {parts_6} {parts_7} {parts_8}";
+            output = $"{output} {parts_9} {parts_10} {parts_11} {parts_12} {parts_13} {parts_14} {parts_15} {parts_16} {parts_17} {parts_18}";
             //string json = StdLib.Base64Encode($"{{\"name\": \"Bag # {tokenId.ToString()}\", \"description\": \"Loot is randomized adventurer gear generated and stored on chain.Stats, images, and other functionality are intentionally omitted for others to interpret.Feel free to use Loot in any way you want.\", \"image\": \"data:image / svg + xml; base64, { StdLib.Base64Encode(output)} \"}}");
             //output = $"data:application/json;base64, {json}";
-
             return output;
         }
 
@@ -227,7 +228,6 @@ namespace Loot
 
     internal enum StoragePrefix
     {
-        State = 0x14,
         Owner = 0x15,
         Token = 0x16,
     }

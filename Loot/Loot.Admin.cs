@@ -96,18 +96,5 @@ namespace Loot
             OwnerOnly();
             ContractManagement.Destroy();
         }
-        public static bool Pause()
-        {
-            OwnerOnly();
-            StateStorage.Pause();
-            return true;
-        }
-
-        public static bool Resume()
-        {
-            OwnerOnly();
-            StateStorage.Resume();
-            return true;
-        }
     }
 }
