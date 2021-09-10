@@ -1,5 +1,6 @@
 # Loot
 This is a migration of loot nft contract.
+This also solves the random issue in loot.
 
 ![7772](https://user-images.githubusercontent.com/10189511/132791851-8ef79f6a-cff3-448b-81f8-3db12d86b705.png)
 
