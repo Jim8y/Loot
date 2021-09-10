@@ -91,7 +91,25 @@ copy the `tx` filed and send  the transaction with `sendrawtranaction` API
 
 Decode the `value` with base64:
 ```html
-<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: serif; font-size: 14px; }</style><rect width="100%" height="100%" fill="black" /><text x="10" y="20" class="base"> N3 Secure Loot #7772 </text><text x="10" y="40" class="base"> Maul </text><text x="10" y="60" class="base"> Studded Leather Armor of Rage </text><text x="10" y="80" class="base"> Great Helm </text><text x="10" y="100" class="base"> Linen Sash </text><text x="10" y="120" class="base"> Demonhide Boots </text><text x="10" y="140" class="base"> Hard Leather Gloves </text><text x="10" y="160" class="base"> Necklace </text><text x="10" y="180" class="base"> "Rage Peak" Bronze Ring of Reflection +1</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350">
+    <style>
+        .base {
+            fill: white;
+            font-family: serif;
+            font-size: 14px;
+        }
+    </style>
+    <rect width="100%" height="100%" fill="black" />
+    <text x="10" y="20" class="base"> N3 Secure Loot #7772 </text>
+    <text x="10" y="40" class="base"> Maul </text>
+    <text x="10" y="60" class="base"> Studded Leather Armor of Rage </text>
+    <text x="10" y="80" class="base"> Great Helm </text>
+    <text x="10" y="100" class="base"> Linen Sash </text>
+    <text x="10" y="120" class="base"> Demonhide Boots </text>
+    <text x="10" y="140" class="base"> Hard Leather Gloves </text>
+    <text x="10" y="160" class="base"> Necklace </text>
+    <text x="10" y="180" class="base"> "Rage Peak" Bronze Ring of Reflection +1</text>
+</svg>
 ```
 
 
