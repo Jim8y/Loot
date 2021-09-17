@@ -95,7 +95,7 @@ namespace Loot
             // Here i can not use sourceArray[(int)rand % sourceArray.Length];
             // I have no idea what causes this issue.
             var value = rand % sourceArray.Length;
-            string output = sourceArray[(int)value];
+            string output = sourceArray[(int)rand % sourceArray.Length];
             var greatness = rand % 21;
 
             value = rand % suffixes.Length;
