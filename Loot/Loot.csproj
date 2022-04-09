@@ -9,7 +9,7 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Message Text="Start NeoContract converter, Source File: $(ProjectPath)" Importance="high">
     </Message>
-    <Exec Command="dotnet C:\Users\liaoj\git\neo-devpack-dotnet\src\Neo.Compiler.CSharp\bin\Release\net5.0\nccs.dll &quot;$(ProjectPath)&quot;" />
+    <Exec Command="dotnet nccs.dll &quot;$(ProjectPath)&quot;" />
   </Target>
 
   <ItemGroup>
